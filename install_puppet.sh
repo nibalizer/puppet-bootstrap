@@ -1,20 +1,28 @@
 #!/bin/bash
 
-if cat /etc/issue | grep 14.04 >/dev/null ; then
-
-	wget https://apt.puppetlabs.com/puppetlabs-release-trusty.deb
-	sudo dpkg -i puppetlabs-release-trusty.deb
-	sudo apt-get update
-	apt-get install -y puppet
+if grep Ubuntu /etc/*-release &>/dev/null ; then
+  for release in trusty precise ; do
+    if grep $release /etc/*-release &>/dev/null ; then
+      wget https://apt.puppetlabs.com/puppetlabs-release-${release}.deb
+      sudo dpkg -i puppetlabs-release-${release}.deb
+    fi
+  done
+  sudo apt-get update
+  apt-get install -y puppet
+elif grep "\(CentOS\|RedHat\)" /etc/*-release &>/dev/null ; then
+  for release in 5 6 7 ; do
+    if grep "release $release" /etc/*-release &>/dev/null ; then
+      sudo rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-${release}.noarch.rpm
+      yum install -y puppet
+      break
+    fi
+  done
+else
+  echo "This operating system is not yet supported."
 fi
 
-if cat /etc/issue | grep 12.04 >/dev/null; then
-
-	wget https://apt.puppetlabs.com/puppetlabs-release-precise.deb
-	sudo dpkg -i puppetlabs-release-precise.deb
-	sudo apt-get update
-	apt-get install -y puppet
+if [ -f /etc/puppet/puppet.conf ] ; then
+  sed -i '/templatedir/d' /etc/puppet/puppet.conf
+else
+  echo "Puppet setup failed."
 fi
-
-sed -i '/templatedir/d' /etc/puppet/puppet.conf
-
