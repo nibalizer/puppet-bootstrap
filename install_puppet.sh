@@ -3,8 +3,9 @@
 if grep Ubuntu /etc/*-release &>/dev/null ; then
   for release in trusty precise ; do
     if grep $release /etc/*-release &>/dev/null ; then
-      wget https://apt.puppetlabs.com/puppetlabs-release-${release}.deb
-      sudo dpkg -i puppetlabs-release-${release}.deb
+      wget -O /tmp/puppetlabs-release-${release}.deb https://apt.puppetlabs.com/puppetlabs-release-${release}.deb
+      sudo dpkg -i /tmp/puppetlabs-release-${release}.deb
+      rm /tmp/puppetlabs-release-${release}.deb
     fi
   done
   sudo apt-get update
