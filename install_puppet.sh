@@ -1,25 +1,56 @@
 #!/bin/bash
 
-if grep Ubuntu /etc/*-release &>/dev/null ; then
-  for release in trusty precise ; do
-    if grep $release /etc/*-release &>/dev/null ; then
-      wget -O /tmp/puppetlabs-release-${release}.deb https://apt.puppetlabs.com/puppetlabs-release-${release}.deb
-      dpkg -i /tmp/puppetlabs-release-${release}.deb
-      rm /tmp/puppetlabs-release-${release}.deb
-    fi
-  done
+unsupported() {
+  echo "This operating system is not yet supported."
+  exit 1
+}
+
+debian_puppet_install() {
+  local release=$1
+  wget -O /tmp/puppetlabs-release-${release}.deb https://apt.puppetlabs.com/puppetlabs-release-${release}.deb
+  dpkg -i /tmp/puppetlabs-release-${release}.deb
+  rm /tmp/puppetlabs-release-${release}.deb
   apt-get update
   apt-get install -y puppet
-elif grep "\(CentOS\|RedHat\)" /etc/*-release &>/dev/null ; then
-  for release in 5 6 7 ; do
-    if grep "release $release" /etc/*-release &>/dev/null ; then
-      rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-${release}.noarch.rpm
-      yum install -y puppet
-      break
-    fi
-  done
+}
+
+redhat_puppet_install() {
+  local release=$1
+  rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-${release}.noarch.rpm
+  yum install -y puppet
+}
+
+if [ -f /etc/lsb-release ] ; then
+  if grep precise /etc/lsb-release &>/dev/null ; then
+    release=precise
+  elif grep trusty /etc/lsb-release &>/dev/null ; then
+    release=trusty
+  else
+    unsupported
+  fi
+  debian_puppet_install $release
+elif [ -f /etc/debian_version ] ; then
+  if grep ^6 /etc/debian_version ; then
+    release='squeeze'
+  elif grep ^7 /etc/debian_version ; then
+    release='wheezy'
+  else
+    unsupported
+  fi
+  debian_puppet_install $release
+elif [ -f /etc/redhat-release ] ; then
+  if grep "release 5" /etc/redhat-release &>/dev/null ; then
+    release=5
+  elif grep "release 6" /etc/redhat-release &>/dev/null ; then
+    release=6
+  elif grep "release 7" /etc/redhat-release &>/dev/null ; then
+    release=7
+  else
+    unsupported
+  fi
+  redhat_puppet_install $release
 else
-  echo "This operating system is not yet supported."
+  unsupported
 fi
 
 if [ -f /etc/puppet/puppet.conf ] ; then
