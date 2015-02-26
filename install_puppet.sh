@@ -16,7 +16,7 @@ debian_puppet_install() {
 
 redhat_puppet_install() {
   local release=$1
-  rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-el-${release}.noarch.rpm
+  rpm -ivh http://yum.puppetlabs.com/puppetlabs-release-${release}.noarch.rpm
   yum install -y puppet
 }
 
@@ -39,16 +39,15 @@ elif [ -f /etc/debian_version ] ; then
   fi
   debian_puppet_install $release
 elif [ -f /etc/redhat-release ] ; then
-  if grep "release 5" /etc/redhat-release &>/dev/null ; then
-    release=5
-  elif grep "release 6" /etc/redhat-release &>/dev/null ; then
-    release=6
-  elif grep "release 7" /etc/redhat-release &>/dev/null ; then
-    release=7
+  if grep "Red Hat" /etc/redhat-release || grep "CentOS" /etc/redhat-release; then
+    platform='el'
+  elif grep "Fedora" /etc/redhat-release ; then
+    platform='fedora'
   else
     unsupported
   fi
-  redhat_puppet_install $release
+  release=$(grep ' release [0-9]' /etc/redhat-release | sed -n 's/.* release \([0-9]*\).*$/\1/p')
+  redhat_puppet_install "${platform}-${release}"
 else
   unsupported
 fi
