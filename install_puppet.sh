@@ -56,4 +56,5 @@ if [ -f /etc/puppet/puppet.conf ] ; then
   sed -i '/templatedir/d' /etc/puppet/puppet.conf
 else
   echo "Puppet setup failed."
+  exit 1
 fi
