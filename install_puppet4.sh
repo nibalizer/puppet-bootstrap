@@ -53,8 +53,8 @@ else
   unsupported
 fi
 
-if [ -f /etc/puppet/puppet.conf ] ; then
-  sed -i '/templatedir/d' /etc/puppet/puppet.conf
+if [ -x /opt/puppetlabs/bin/puppet ] ; then
+  echo 'export PATH=${PATH}:/opt/puppetlabs/bin/puppet' >> ~/.bashrc
 else
   echo "Puppet setup failed."
   exit 1
